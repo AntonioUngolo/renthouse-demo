@@ -150,7 +150,62 @@
     prevY = y;
   }
 
-  document.querySelector('.burger')?.addEventListener('click', () => root.classList.toggle('nav-open'));
+  /* ---------- Menu mobile offcanvas ----------
+     Costruito dai link della nav desktop, così le pagine restano allineate. */
+  const burger = document.querySelector('.burger');
+  if (burger) {
+    const oc = document.createElement('div');
+    oc.className = 'offcanvas';
+    oc.id = 'offcanvas';
+    oc.inert = true;
+    const ocNav = document.createElement('nav');
+    ocNav.className = 'oc-nav';
+    ocNav.setAttribute('aria-label', 'Menu');
+    const ocFoot = document.createElement('div');
+    ocFoot.className = 'oc-foot';
+
+    const seen = new Set();
+    let i = 0;
+    document.querySelectorAll('.nav a:not(.btn)').forEach((a) => {
+      const label = a.textContent.trim();
+      if (seen.has(label.toLowerCase())) return;
+      seen.add(label.toLowerCase());
+      const link = document.createElement('a');
+      link.href = a.getAttribute('href');
+      link.className = 'oc-link oc-anim' + (a.classList.contains('is-active') ? ' is-active' : '');
+      link.style.setProperty('--i', i);
+      link.innerHTML = `${label}<span class="oc-num">0${++i}</span>`;
+      ocNav.append(link);
+    });
+
+    const cta = document.querySelector('.nav .btn')?.cloneNode(true);
+    if (cta) { cta.classList.add('oc-anim'); cta.style.setProperty('--i', i++); ocFoot.append(cta); }
+    const contact = document.querySelector('.site-footer a[href^="tel"]')?.closest('p')?.cloneNode(true);
+    if (contact) { contact.classList.add('oc-anim'); contact.style.setProperty('--i', i++); ocFoot.append(contact); }
+
+    const mono = document.createElement('img');
+    mono.className = 'oc-mono';
+    mono.src = 'assets/svg/monogram.svg';
+    mono.alt = '';
+    oc.append(ocNav, ocFoot, mono);
+    header.after(oc);
+
+    burger.setAttribute('aria-controls', 'offcanvas');
+    burger.setAttribute('aria-expanded', 'false');
+    const setNav = (open) => {
+      root.classList.toggle('nav-open', open);
+      burger.setAttribute('aria-expanded', open);
+      burger.setAttribute('aria-label', open ? 'Chiudi il menu' : 'Apri il menu');
+      oc.inert = !open;
+      header.classList.remove('is-hidden');
+      document.body.style.overflow = open ? 'hidden' : '';
+      if (lenis) open ? lenis.stop() : lenis.start();
+    };
+    burger.addEventListener('click', () => setNav(!root.classList.contains('nav-open')));
+    oc.addEventListener('click', (e) => { if (e.target.closest('a')) setNav(false); });
+    addEventListener('keydown', (e) => { if (e.key === 'Escape' && root.classList.contains('nav-open')) setNav(false); });
+    addEventListener('resize', () => { if (!isMobile() && root.classList.contains('nav-open')) setNav(false); });
+  }
 
   /* ---------- Loop ---------- */
   function frame(t) {
@@ -234,9 +289,9 @@
     a.addEventListener('click', (e) => {
       const target = a.getAttribute('href').length > 1 && document.querySelector(a.getAttribute('href'));
       e.preventDefault();
-      root.classList.remove('nav-open');
       if (!target) return;
-      if (lenis) lenis.scrollTo(target, { offset: -90, duration: 1.6 });
+      // lenis.start(): se il link arriva dal menu mobile lo scroll era bloccato
+      if (lenis) { lenis.start(); lenis.scrollTo(target, { offset: -90, duration: 1.6 }); }
       else target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth' });
     });
   });
