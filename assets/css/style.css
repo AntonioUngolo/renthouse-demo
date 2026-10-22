@@ -435,7 +435,9 @@ html:not(.js) .curtain { display: none; }
   .abs { position: relative; left: auto; top: auto; width: 100%; height: auto !important; translate: none !important; }
   .abs.media { aspect-ratio: var(--w) / var(--h); }
   .abs.m-bleed { width: calc(100% + 40px); margin-left: -20px; }
-  .abs.m-small { width: 46%; align-self: flex-end; margin-top: -110px; }
+  .abs.m-small { width: 46%; align-self: flex-end; }
+  /* si sovrappone solo se segue una foto, mai sopra testi o pulsanti */
+  .abs.media + .abs.m-small { margin-top: -110px; }
   .abs.m-hide { display: none; }
   .mono.abs { width: 120px; align-self: flex-end; }
   .m-order-1 { order: -1; }
