@@ -66,9 +66,49 @@
         setTimeout(step, 55 + Math.random() * 55 + next);
       } else {
         caret.classList.remove('is-typing');
+        if (typeEl.dataset.rotate) rotatePhrases(typeEl.dataset.rotate.split('|'));
       }
     };
     setTimeout(step, 150);
+  }
+
+  // Frasi a rotazione: l'ultima riga si cancella e si riscrive con la frase
+  // successiva, le righe sopra restano fisse
+  function rotatePhrases(phrases) {
+    const lastBr = [...typeEl.querySelectorAll('br')].pop();
+    typeChars.filter((c) => lastBr.compareDocumentPosition(c) & Node.DOCUMENT_POSITION_FOLLOWING).forEach((c) => c.remove());
+    const rot = document.createElement('span');
+    rot.className = 'type-rot';
+    rot.setAttribute('aria-hidden', 'true');
+    rot.textContent = phrases[0];
+    lastBr.after(rot);
+    rot.after(caret);
+
+    let idx = 0;
+    const hold = () => setTimeout(erase, 2400);
+    const erase = () => {
+      caret.classList.add('is-typing');
+      const t = rot.textContent;
+      if (t.length) {
+        rot.textContent = t.slice(0, -1);
+        setTimeout(erase, 38);
+      } else {
+        idx = (idx + 1) % phrases.length;
+        setTimeout(type, 350);
+      }
+    };
+    const type = () => {
+      const target = phrases[idx];
+      const len = rot.textContent.length;
+      if (len < target.length) {
+        rot.textContent = target.slice(0, len + 1);
+        setTimeout(type, 60 + Math.random() * 60);
+      } else {
+        caret.classList.remove('is-typing');
+        hold();
+      }
+    };
+    hold();
   }
 
   /* ---------- Comparsa allo scroll ----------

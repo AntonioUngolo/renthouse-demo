@@ -363,6 +363,7 @@ html:not(.js) .curtain { display: none; }
   animation: blink 1s steps(1) infinite;
 }
 .type-caret.is-typing { animation: none; }
+.type-rot { white-space: nowrap; }
 @keyframes blink { 50% { opacity: 0; } }
 
 /* Comparsa allo scroll */
